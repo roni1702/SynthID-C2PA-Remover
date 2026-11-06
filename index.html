@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SynthID Remover - AI Watermark & Metadata Cleaner</title>
+  <style>
+    :root {
+      --red: #d32f2f;
+      --red-hover: #b71c1c;
+      --green: #1b5e20;
+      --green-light: #e8f5e9;
+      --green-border: #4caf50;
+      --white: #ffffff;
+      --black: #121212;
+      --gray-bg: #f8f9fa;
+      --gray-border: #e2e8f0;
+      --text-muted: #555555;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--white);
+      color: var(--black);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      border-bottom: 2px solid var(--black);
+      background-color: var(--white);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--black);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .star-counter {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border: 1.5px solid var(--black);
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      background: var(--white);
+    }
+
+    .btn-red {
+      background-color: var(--red);
+      color: var(--white);
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-red:hover {
+      background-color: var(--red-hover);
+      box-shadow: 0 4px 12px rgba(211, 47, 47, 0.25);
+    }
+
+    .btn-red:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--black);
+      border: 1.5px solid var(--black);
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-outline:hover {
+      background: var(--gray-bg);
+    }
+
+    .main-wrapper {
+      max-width: 860px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+      flex: 1;
+    }
+
+    .notice-card {
+      border: 1.5px solid var(--green-border);
+      background-color: var(--green-light);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+    }
+
+    .notice-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--green);
+    }
+
+    .notice-item:first-child {
+      margin-bottom: 6px;
+    }
+
+    .upload-zone {
+      border: 2px dashed var(--black);
+      background: var(--gray-bg);
+      border-radius: 14px;
+      padding: 44px 20px;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      transition: border-color 0.2s ease;
+    }
+
+    .upload-zone:hover {
+      border-color: var(--red);
+    }
+
+    .upload-zone input[type="file"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .upload-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-top: 10px;
+      margin-bottom: 4px;
+    }
+
+    .scanner-result {
+      margin-top: 20px;
+      padding: 14px 18px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .scanner-result.warning {
+      background-color: #ffebee;
+      border: 1.5px solid var(--red);
+      color: var(--red);
+    }
+
+    .scanner-result.clean {
+      background-color: var(--green-light);
+      border: 1.5px solid var(--green);
+      color: var(--green);
+    }
+
+    .action-container {
+      text-align: center;
+      margin: 24px 0;
+    }
+
+    .btn-process {
+      min-width: 280px;
+      padding: 14px 28px;
+      font-size: 1.05rem;
+      position: relative;
+    }
+
+    .button-spinner {
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top-color: var(--white);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .tutorial-section {
+      margin-top: 36px;
+      padding-top: 24px;
+      border-top: 1px solid var(--gray-border);
+    }
+
+    .section-heading {
+      font-size: 1.15rem;
+      font-weight: 800;
+      margin-bottom: 18px;
+      border-left: 4px solid var(--red);
+      padding-left: 10px;
+    }
+
+    .tutorial-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .step-card {
+      border: 1px solid var(--gray-border);
+      padding: 18px;
+      border-radius: 10px;
+      background: var(--gray-bg);
+    }
+
+    .step-badge {
+      width: 32px;
+      height: 32px;
+      background: var(--red);
+      color: var(--white);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .bonus-section {
+      margin-top: 26px;
+      padding: 20px;
+      border-radius: 10px;
+      background: var(--gray-bg);
+      border: 1.5px solid var(--gray-border);
+    }
+
+    .btn-claimed {
+      opacity: 0.45 !important;
+      cursor: not-allowed !important;
+      border-color: #999999 !important;
+      color: #666666 !important;
+      background: #f0f0f0 !important;
+    }
+
+    .pricing-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+      max-width: 720px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .pricing-card {
+      border: 1.5px solid var(--gray-border);
+      border-radius: 10px;
+      padding: 16px 12px;
+      text-align: center;
+      background: var(--white);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .pricing-card.highlight {
+      border-color: var(--green);
+    }
+
+    .pricing-card .price {
+      font-size: 1.45rem;
+      font-weight: 900;
+      margin: 10px 0 4px;
+    }
+
+    .pricing-card .stars-label {
+      color: var(--green);
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .corner-badge {
+      position: absolute;
+      top: 0;
+      right: 0;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-bottom-left-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-green { background: var(--green); color: var(--white); }
+    .badge-red { background: var(--red); color: var(--white); }
+
+    .preview-box {
+      border: 2px solid var(--black);
+      border-radius: 12px;
+      padding: 16px;
+      background: var(--gray-bg);
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .preview-box img {
+      max-width: 100%;
+      max-height: 480px;
+      border-radius: 6px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid var(--black);
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    .copy-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .auth-toggle-link {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--black);
+    }
+
+    .auth-toggle-link span {
+      color: var(--red);
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.65);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+
+    .modal-box {
+      background: var(--white);
+      max-width: 440px;
+      width: 100%;
+      border-radius: 12px;
+      border: 3px solid var(--red);
+      padding: 24px;
+    }
+
+    .modal-box h3 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .modal-box p {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .toast-pill {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--black);
+      color: var(--white);
+      padding: 12px 20px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      z-index: 2000;
+      border-left: 5px solid var(--green);
+    }
+
+    .icon {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+      flex-shrink: 0;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 600px) {
+      .app-header { padding: 14px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- কাস্টম মোডাল -->
+  <div id="customModal" class="modal-overlay">
+    <div class="modal-box">
+      <h3 id="modalTitle">বিজ্ঞপ্তি</h3>
+      <p id="modalMsg"></p>
+      <div style="text-align: right;">
+        <button class="btn-red" onclick="closeModal()">ঠিক আছে</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- কাস্টম টোস্ট -->
+  <div id="toastBox" class="toast-pill">
+    <svg class="icon" style="color:var(--green-border);" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+    <span id="toastText">কপি হয়েছে</span>
+  </div>
+
+  <!-- হেডার -->
+  <header class="app-header">
+    <div class="brand-logo" onclick="showView('dashboard')">
+      <!-- শিল্ড আইকন -->
+      <svg class="icon" style="width:28px; height:28px; color:var(--red);" viewBox="0 0 24 24">
+        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v6h-2V7zm0 8h2v2h-2v-2z"/>
+      </svg>
+      SynthID Remover
+    </div>
+    <div class="header-actions">
+      <div class="star-counter">
+        <!-- স্টার আইকন -->
+        <svg class="icon" style="color:var(--red);" viewBox="0 0 24 24">
+          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+        </svg>
+        <span id="liveStars">0</span>
+      </div>
+      <div id="authNav">
+        <button class="btn-red" onclick="showView('auth')">লগইন</button>
+      </div>
+      <div id="userNav" class="hidden">
+        <button class="btn-outline" onclick="userLogout()">লগআউট</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-wrapper">
+
+    <!-- ১. লগইন / সাইনআপ আলাদা মোড -->
+    <section id="viewAuth" class="hidden" style="max-width: 400px; margin: 30px auto;">
+      <h2 id="authHeading" style="font-weight: 900; margin-bottom: 20px; text-align: center;">লগইন করুন</h2>
+      
+      <div class="form-group">
+        <label>ইউজারনেম</label>
+        <input type="text" id="inputUsername" class="form-control" placeholder="আপনার ইউজারনেম">
+      </div>
+      
+      <div class="form-group">
+        <label>পাসওয়ার্ড</label>
+        <input type="password" id="inputPassword" class="form-control" placeholder="গোপন পাসওয়ার্ড">
+      </div>
+      
+      <div class="form-group hidden" id="groupReferral">
+        <label>রেফারেল কোড (ঐচ্ছিক)</label>
+        <input type="text" id="inputReferral" class="form-control" placeholder="রেফারার ইউজারনেম">
+      </div>
+      
+      <button id="authSubmitBtn" class="btn-red" style="width: 100%; margin-top: 10px;" onclick="processAuthSubmit()">লগইন</button>
+      
+      <div class="auth-toggle-link" id="authToggleContainer">
+        নতুন অ্যাকাউন্ট নেই? <span onclick="switchAuthMode('signup')">নতুন অ্যাকাউন্ট তৈরি করুন</span>
+      </div>
+    </section>
+
+    <!-- ২. ড্যাশবোর্ড -->
+    <section id="viewDashboard">
+      
+      <!-- নোটিশ বক্স -->
+      <div class="notice-card">
+        <div class="notice-item">
+          <!-- ইনফো আইকন -->
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+          আপনার ছবি কোনো সার্ভারে আপলোড হচ্ছে না (আপনার ব্রাউজারে কম্পাইল হবে)।
+        </div>
+        <div class="notice-item">
+          <!-- টিক আইকন -->
+          <svg class="icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          C2PA মেটাডেটা মুছে ফেলা হবে এবং নয়েজ যুক্ত করে SynthID ডিজেবল করা হবে।
+        </div>
+      </div>
+
+      <!-- আপলোড বক্স -->
+      <div class="upload-zone" id="dropZone">
+        <input type="file" id="filePicker" accept="image/jpeg,image/png,image/webp">
+        <!-- ক্লাউড আপলোড আইকন -->
+        <svg class="icon" style="width: 52px; height: 52px; color: var(--red);" viewBox="0 0 24 24">
+          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+        </svg>
+        <div class="upload-title">Upload Photo</div>
+        <p style="font-size: 0.88rem; color: var(--text-muted);">JPG, PNG অথবা WEBP ছবি নির্বাচন করুন</p>
+      </div>
+
+      <!-- স্ক্যান রেজাল্ট -->
+      <div id="scanResultBox" class="hidden"></div>
+
+      <!-- প্রসেসিং বাটন (স্মুথ লোডারসহ) -->
+      <div id="actionBox" class="action-container hidden">
+        <button id="btnProcessAction" class="btn-red btn-process" onclick="executeImageProcessing()">
+          <span id="btnTextLabel">Remove SynthID & Metadata</span>
+          <span id="btnSpinnerElement" class="button-spinner hidden"></span>
+        </button>
+      </div>
+
+      <!-- টিউটোরিয়াল সেকশন (৩টি ধাপ) -->
+      <section class="tutorial-section">
+        <h3 class="section-heading">ব্যবহারের নিয়মাবলী</h3>
+        <div class="tutorial-cards">
+          <div class="step-card">
+            <div class="step-badge">১</div>
+            <h4 style="margin-bottom: 6px;">Upload a photo</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">আপনার ডিভাইস থেকে কাঙ্ক্ষিত এআই ছবি নির্বাচন করে বক্সে আপলোড করুন।</p>
+          </div>
+          <div class="step-card">
+            <div class="step-badge">২</div>
+            <h4 style="margin-bottom: 6px;">Remove বাটনে ক্লিক</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">SynthID বা মেটাডেটা পাওয়া গেলে বাটনে চাপ দিয়ে রিমুভ নিশ্চিত করুন।</p>
+          </div>
+          <div class="step-card">
+            <div class="step-badge">৩</div>
+            <h4 style="margin-bottom: 6px;">Download your photo</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">ক্লিন হওয়া মেটাডেটা-হীন ছবিটি অরিজিনাল কোয়ালিটিতে সেভ করে নিন।</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ৩টি ধাপের নিচে আলাদা বোনাস ও রেফারেল সেকশন -->
+      <div class="bonus-section">
+        <h4 style="margin-bottom: 12px; font-weight: 800;">দৈনিক বোনাস ও রেফারেল</h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+          <button id="btnDailyClaim" class="btn-outline" style="border-color: var(--green); color: var(--green);" onclick="triggerDailyClaim()">
+            Claim 1 Star (Daily Bonus)
+          </button>
+          <button class="btn-outline" onclick="copyReferral()">
+            রেফারেল লিংক কপি করুন (+৫ স্টার)
+          </button>
+        </div>
+      </div>
+
+      <!-- প্যাকেজ সেকশন -->
+      <section class="tutorial-section">
+        <h3 class="section-heading">স্টার প্যাকেজ সমূহ</h3>
+        <div class="pricing-cards">
+          
+          <!-- ১০ টাকা প্যাক -->
+          <div class="pricing-card">
+            <h4>বেসিক</h4>
+            <div class="price">১০ টাকা</div>
+            <div class="stars-label">
+              <span>১০</span>
+              <!-- স্টার আইকন -->
+              <svg class="icon" style="width:16px; height:16px; color:var(--green);" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            </div>
+            <button class="btn-red" style="width: 100%; padding: 8px 12px; font-size: 0.9rem;" onclick="openPaymentFlow('p1', 10, '১০টি স্টার')">কিনুন</button>
+          </div>
+
+          <!-- ২০ টাকা প্যাক (Most Popular) -->
+          <div class="pricing-card highlight">
+            <div class="corner-badge badge-green">Most Popular</div>
+            <h4>স্ট্যান্ডার্ড</h4>
+            <div class="price">২০ টাকা</div>
+            <div class="stars-label">
+              <span>৩০</span>
+              <!-- স্টার আইকন -->
+              <svg class="icon" style="width:16px; height:16px; color:var(--green);" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            </div>
+            <button class="btn-red" style="width: 100%; padding: 8px 12px; font-size: 0.9rem;" onclick="openPaymentFlow('p2', 20, '৩০টি স্টার')">কিনুন</button>
+          </div>
+
+          <!-- ৫০ টাকা প্যাক (Limited Time) -->
+          <div class="pricing-card">
+            <div class="corner-badge badge-red">Limited Time</div>
+            <h4>আনলিমিটেড</h4>
+            <div class="price">৫০ টাকা</div>
+            <div class="stars-label">
+              <span>আনলিমিটেড</span>
+              <!-- স্টার আইকন -->
+              <svg class="icon" style="width:16px; height:16px; color:var(--green);" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            </div>
+            <button class="btn-red" style="width: 100%; padding: 8px 12px; font-size: 0.9rem;" onclick="openPaymentFlow('p3', 50, 'আনলিমিটেড স্টার')">কিনুন</button>
+          </div>
+
+        </div>
+      </section>
+
+    </section>
+
+    <!-- ৩. প্রিভিউ ভিউ -->
+    <section id="viewPreview" class="hidden">
+      <h3 style="margin-bottom: 16px; font-weight: 800;">ক্লিন ছবির প্রিভিউ</h3>
+      <div class="preview-box">
+        <img id="cleanPreviewImg" src="" alt="Clean Image Preview">
+      </div>
+      <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;">
+        <a id="downloadPhotoLink" class="btn-red" download="clean_image.jpg">
+          <!-- ডাউনলোড আইকন -->
+          <svg class="icon" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          Download Photo
+        </a>
+        <button class="btn-outline" onclick="cleanupAndReturnHome()">
+          Back to Home
+        </button>
+      </div>
+    </section>
+
+    <!-- ৪. পেমেন্ট ভিউ -->
+    <section id="viewPayment" class="hidden" style="max-width: 440px; margin: 0 auto;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+        <button class="btn-outline" style="padding: 6px 12px;" onclick="showView('dashboard')">
+          <!-- ব্যাক অ্যারো আইকন -->
+          <svg class="icon" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </button>
+        <h2 style="font-weight: 900;">Payment</h2>
+      </div>
+
+      <div style="background: var(--gray-bg); border: 1.5px solid var(--black); border-radius: 8px; padding: 14px; margin-bottom: 18px;">
+        <p style="font-size: 0.95rem; margin-bottom: 4px;">প্যাকেজ: <strong id="lblPlanName">-</strong></p>
+        <p style="font-size: 0.95rem;">টাকার পরিমাণ: <strong id="lblPlanAmount">-</strong> টাকা</p>
+      </div>
+
+      <div class="form-group">
+        <label>বিকাশ / নগদ পার্সোনাল নম্বর:</label>
+        <div class="copy-group">
+          <input type="text" id="manualPayNumber" class="form-control" value="01797000000" readonly style="font-weight: 800;">
+          <button class="btn-red" onclick="executeAutoCopy()">Copy Number</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>যে নম্বর থেকে টাকা পাঠিয়েছেন (Sender Number):</label>
+        <input type="text" id="inputSender" class="form-control" placeholder="01XXXXXXXXX">
+      </div>
+
+      <div class="form-group">
+        <label>ট্রানজেকশন আইডি (TrxID):</label>
+        <input type="text" id="inputTrxId" class="form-control" placeholder="যেমন: 8N5K9L2P">
+      </div>
+
+      <button class="btn-red" style="width: 100%; margin-top: 10px;" onclick="handlePaymentSubmit()">পেমেন্ট সাবমিট করুন</button>
+    </section>
+
+    <!-- ৫. এডমিন ভিউ -->
+    <section id="viewAdmin" class="hidden">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>এডমিন প্যানেল - ট্রানজেকশন যাচাই</h2>
+        <button class="btn-outline" onclick="showView('dashboard')">হোম ড্যাশবোর্ড</button>
+      </div>
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+          <thead>
+            <tr style="background: var(--gray-bg); border-bottom: 2px solid var(--black);">
+              <th style="padding: 10px;">আইডি</th>
+              <th style="padding: 10px;">ইউজার</th>
+              <th style="padding: 10px;">প্যাক</th>
+              <th style="padding: 10px;">টাকা</th>
+              <th style="padding: 10px;">নম্বর</th>
+              <th style="padding: 10px;">TrxID</th>
+              <th style="padding: 10px;">স্ট্যাটাস</th>
+              <th style="padding: 10px;">পদক্ষেপ</th>
+            </tr>
+          </thead>
+          <tbody id="adminTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+  <script>
+    /**
+     * SynthID Remover - Client Engine & Native Interceptor
+     */
+
+    // ক্লাউডফ্লেয়ার ওয়ার্কারের লিংক (আপনার ওয়ার্কার লিংক এখানে বসান)
+    const WORKER_URL = "https://synthid-c2pa-remover.mdroni5219.workers.dev";
+
+    // সমস্ত /api/ রিকোয়েস্ট স্বয়ংক্রিয়ভাবে ওয়ার্কার লিংকে পাঠানোর ইন্টারসেপ্টর
+    const nativeFetch = window.fetch;
+    window.fetch = function(resource, init) {
+      if (typeof resource === "string" && resource.startsWith("/api/")) {
+        resource = WORKER_URL + resource;
+      }
+      return nativeFetch(resource, init);
+    };
+
+    let authToken = localStorage.getItem("app_token") || null;
+    let userState = null;
+    let selectedImageFile = null;
+    let activePlan = null;
+    let cachedDeviceFingerprint = null;
+    let currentAuthMode = 'login';
+
+    // ১. কাস্টম মোডাল
+    function showModal(title, message) {
+      document.getElementById("modalTitle").innerText = title;
+      document.getElementById("modalMsg").innerText = message;
+      document.getElementById("customModal").style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("customModal").style.display = "none";
+    }
+
+    // কাস্টম টোস্ট
+    function showToast(msg) {
+      const toast = document.getElementById("toastBox");
+      document.getElementById("toastText").innerText = msg;
+      toast.style.display = "flex";
+      setTimeout(() => { toast.style.display = "none"; }, 3200);
+    }
+
+    // ২. ভিউ সুইচিং
+    function showView(viewId) {
+      const views = ["viewAuth", "viewDashboard", "viewPreview", "viewPayment", "viewAdmin"];
+      views.forEach(v => document.getElementById(v).classList.add("hidden"));
+
+      if (viewId === "dashboard") document.getElementById("viewDashboard").classList.remove("hidden");
+      if (viewId === "auth") document.getElementById("viewAuth").classList.remove("hidden");
+      if (viewId === "preview") document.getElementById("viewPreview").classList.remove("hidden");
+      if (viewId === "payment") document.getElementById("viewPayment").classList.remove("hidden");
+      if (viewId === "admin") {
+        document.getElementById("viewAdmin").classList.remove("hidden");
+        fetchAdminTransactions();
+      }
+    }
+
+    // ৩. আল্ট্রা-স্ট্যাবল ডিভাইস ফিঙ্গারপ্রিন্টিং (GPU Renderer + Screen Max/Min + Core UUID)
+    async function getDeviceFingerprint() {
+      if (cachedDeviceFingerprint) return cachedDeviceFingerprint;
+
+      let coreId = localStorage.getItem("__app_core_uuid");
+      if (!coreId) {
+        coreId = 'dev_' + Math.random().toString(36).substring(2, 12) + Date.now().toString(36);
+        localStorage.setItem("__app_core_uuid", coreId);
+      }
+
+      let gpuInfo = "standard_gpu";
+      try {
+        const testCanvas = document.createElement("canvas");
+        const gl = testCanvas.getContext("webgl") || testCanvas.getContext("experimental-webgl");
+        if (gl) {
+          const debugExt = gl.getExtension("WEBGL_debug_renderer_info");
+          if (debugExt) {
+            gpuInfo = gl.getParameter(debugExt.UNMASKED_RENDERER_WEBGL);
+          }
+        }
+      } catch (e) {
+        gpuInfo = "gpu_fallback";
+      }
+
+      const screenDim = Math.max(screen.width, screen.height) + "x" + Math.min(screen.width, screen.height);
+
+      const immutableData = [
+        coreId,
+        gpuInfo,
+        navigator.hardwareConcurrency || "4",
+        screenDim,
+        screen.colorDepth,
+        Intl.DateTimeFormat().resolvedOptions().timeZone
+      ].join("###");
+
+      const buffer = new TextEncoder().encode(immutableData);
+      const digest = await crypto.subtle.digest("SHA-256", buffer);
+      cachedDeviceFingerprint = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, "0")).join("");
+      return cachedDeviceFingerprint;
+    }
+
+    // ৪. লাইভ ব্যালেন্স সিঙ্ক
+    async function syncUserState() {
+      if (!authToken) {
+        document.getElementById("liveStars").innerText = "0";
+        document.getElementById("authNav").classList.remove("hidden");
+        document.getElementById("userNav").classList.add("hidden");
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/user/status", {
+          headers: { "Authorization": "Bearer " + authToken }
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          userState = data;
+          document.getElementById("liveStars").innerText = data.isUnlimited ? "Unlimited" : data.stars;
+          document.getElementById("authNav").classList.add("hidden");
+          document.getElementById("userNav").classList.remove("hidden");
+
+          const today = new Date().toISOString().slice(0, 10);
+          const claimBtn = document.getElementById("btnDailyClaim");
+          if (data.lastDailyClaim === today) {
+            claimBtn.classList.add("btn-claimed");
+            claimBtn.innerText = "Daily Bonus Claimed";
+            claimBtn.disabled = true;
+          } else {
+            claimBtn.classList.remove("btn-claimed");
+            claimBtn.innerText = "Claim 1 Star (Daily Bonus)";
+            claimBtn.disabled = false;
+          }
+
+        } else {
+          userLogout();
+        }
+      } catch (e) {
+        console.error("State sync failed", e);
+      }
+    }
+
+    // ৫. অথেনটিকেশন মোড সুইচ ও সাবমিশন
+    function switchAuthMode(mode) {
+      currentAuthMode = mode;
+      const heading = document.getElementById("authHeading");
+      const submitBtn = document.getElementById("authSubmitBtn");
+      const refGroup = document.getElementById("groupReferral");
+      const toggleContainer = document.getElementById("authToggleContainer");
+
+      if (mode === 'signup') {
+        heading.innerText = "নতুন অ্যাকাউন্ট তৈরি করুন";
+        submitBtn.innerText = "অ্যাকাউন্ট তৈরি করুন";
+        refGroup.classList.remove("hidden");
+        toggleContainer.innerHTML = 'ইতিমধ্যে অ্যাকাউন্ট আছে? <span onclick="switchAuthMode(\'login\')">লগইন করুন</span>';
+      } else {
+        heading.innerText = "লগইন করুন";
+        submitBtn.innerText = "লগইন";
+        refGroup.classList.add("hidden");
+        toggleContainer.innerHTML = 'নতুন অ্যাকাউন্ট নেই? <span onclick="switchAuthMode(\'signup\')">নতুন অ্যাকাউন্ট তৈরি করুন</span>';
+      }
+    }
+
+    async function processAuthSubmit() {
+      const username = document.getElementById("inputUsername").value.trim();
+      const password = document.getElementById("inputPassword").value.trim();
+      const referralCode = document.getElementById("inputReferral").value.trim();
+
+      if (!username || !password) {
+        showModal("ভুল ইনপুট", "ইউজারনেম এবং পাসওয়ার্ড প্রদান করুন।");
+        return;
+      }
+
+      const fp = await getDeviceFingerprint();
+      const endpoint = currentAuthMode === "signup" ? "/api/auth/signup" : "/api/auth/login";
+
+      try {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password, fingerprint: fp, referralCode })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          authToken = data.token;
+          localStorage.setItem("app_token", authToken);
+          showToast(currentAuthMode === "signup" ? "রেজিস্ট্রেশন সফল হয়েছে।" : "লগইন সফল হয়েছে।");
+          await syncUserState();
+          if (data.role === "admin") {
+            showView("admin");
+          } else {
+            showView("dashboard");
+          }
+        } else {
+          showModal("সতর্কতা", data.message);
+        }
+      } catch (err) {
+        showModal("ত্রুটি", "সার্ভারের সাথে সংযোগ স্থাপন করা যাচ্ছে না।");
+      }
+    }
+
+    function userLogout() {
+      authToken = null;
+      userState = null;
+      localStorage.removeItem("app_token");
+      syncUserState();
+      showView("dashboard");
+      showToast("লগআউট সম্পন্ন হয়েছে।");
+    }
+
+    // ৬. ফাইল নির্বাচন ও মেটাডেটা/SynthID স্ক্যানার
+    const filePicker = document.getElementById("filePicker");
+    filePicker.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files[0]) {
+        analyzeFile(e.target.files[0]);
+      }
+    });
+
+    async function analyzeFile(file) {
+      selectedImageFile = file;
+      const buffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+
+      let watermarkDetected = false;
+      const textDecoder = new TextDecoder("latin1");
+      const sample = textDecoder.decode(bytes.slice(0, Math.min(bytes.length, 600000)));
+
+      if (sample.includes("c2pa") || sample.includes("JUMBF") || sample.includes("SynthID") || sample.includes("Adobe")) {
+        watermarkDetected = true;
+      }
+
+      const resultBox = document.getElementById("scanResultBox");
+      resultBox.classList.remove("hidden");
+
+      if (watermarkDetected) {
+        resultBox.className = "scanner-result warning";
+        resultBox.innerHTML = `
+          <!-- ওয়ার্নিং আইকন -->
+          <svg class="icon" style="color:var(--red); width:24px; height:24px;" viewBox="0 0 24 24">
+            <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+          </svg>
+          <div>সতর্কবার্তা: এই ছবিতে SynthID এবং C2PA মেটাডেটা পাওয়া গিয়েছে।</div>
+        `;
+      } else {
+        resultBox.className = "scanner-result clean";
+        resultBox.innerHTML = `
+          <!-- টিক আইকন -->
+          <svg class="icon" style="color:var(--green); width:24px; height:24px;" viewBox="0 0 24 24">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+          </svg>
+          <div>এই ছবিতে SynthID এবং মেটাডেটা নেই।</div>
+        `;
+      }
+
+      document.getElementById("actionBox").classList.remove("hidden");
+    }
+
+    // ৭. ইমেজ প্রসেসিং ও বাটন লোডার
+    async function executeImageProcessing() {
+      if (!authToken) {
+        showModal("লগইন প্রয়োজন", "ছবি প্রসেস করার জন্য আগে লগইন করুন।");
+        showView("auth");
+        return;
+      }
+
+      if (!selectedImageFile) return;
+
+      const btn = document.getElementById("btnProcessAction");
+      const btnText = document.getElementById("btnTextLabel");
+      const btnSpinner = document.getElementById("btnSpinnerElement");
+
+      btn.disabled = true;
+      btnText.innerText = "Processing...";
+      btnSpinner.classList.remove("hidden");
+
+      try {
+        const deductRes = await fetch("/api/user/deduct-star", {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + authToken }
+        });
+        const deductData = await deductRes.json();
+
+        if (!deductData.success) {
+          showModal("ব্যালেন্স শেষ", deductData.message);
+          resetButtonState();
+          return;
+        }
+
+        const imageElement = new Image();
+        imageElement.src = URL.createObjectURL(selectedImageFile);
+        await new Promise(resolve => imageElement.onload = resolve);
+
+        const canvas = document.createElement("canvas");
+        canvas.width = imageElement.width;
+        canvas.height = imageElement.height;
+        const ctx = canvas.getContext("2d");
+
+        ctx.drawImage(imageElement, 0, 0);
+
+        // SynthID ওয়াটারমার্ক স্ক্র্যাম্বলিং নয়েজ
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const pixels = imageData.data;
+        for (let i = 0; i < pixels.length; i += 16) {
+          const jitter = (Math.random() - 0.5) * 2;
+          pixels[i] = Math.min(255, Math.max(0, pixels[i] + jitter));
+        }
+        ctx.putImageData(imageData, 0, 0);
+
+        canvas.toBlob((blob) => {
+          const cleanBlobUrl = URL.createObjectURL(blob);
+          document.getElementById("cleanPreviewImg").src = cleanBlobUrl;
+          document.getElementById("downloadPhotoLink").href = cleanBlobUrl;
+
+          resetButtonState();
+          syncUserState();
+          showView("preview");
+        }, "image/jpeg", 0.98);
+
+      } catch (err) {
+        showModal("ত্রুটি", "ছবি প্রসেস করার সময় সমস্যা দেখা দিয়েছে।");
+        resetButtonState();
+      }
+    }
+
+    function resetButtonState() {
+      const btn = document.getElementById("btnProcessAction");
+      const btnText = document.getElementById("btnTextLabel");
+      const btnSpinner = document.getElementById("btnSpinnerElement");
+
+      btn.disabled = false;
+      btnText.innerText = "Remove SynthID & Metadata";
+      btnSpinner.classList.add("hidden");
+    }
+
+    function cleanupAndReturnHome() {
+      const img = document.getElementById("cleanPreviewImg");
+      if (img.src) {
+        URL.revokeObjectURL(img.src);
+        img.src = "";
+      }
+      selectedImageFile = null;
+      document.getElementById("filePicker").value = "";
+      document.getElementById("scanResultBox").classList.add("hidden");
+      document.getElementById("actionBox").classList.add("hidden");
+      showView("dashboard");
+    }
+
+    // ৮. ডেইলি ক্লেইম
+    async function triggerDailyClaim() {
+      if (!authToken) {
+        showModal("লগইন আবশ্যক", "দৈনিক ফ্রি স্টার ক্লেইম করতে অনুগ্রহ করে লগইন করুন।");
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/user/claim-daily", {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + authToken }
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message);
+          syncUserState();
+        } else {
+          showModal("বিজ্ঞপ্তি", data.message);
+        }
+      } catch (e) {
+        showModal("ত্রুটি", "অনুরোধ সম্পন্ন করা যায়নি।");
+      }
+    }
+
+    // ৯. রেফারেল লিংক কপি
+    function copyReferral() {
+      if (!userState) {
+        showModal("লগইন আবশ্যক", "রেফারেল লিংক পেতে প্রথমে লগইন করুন।");
+        return;
+      }
+      const link = window.location.origin + "?ref=" + encodeURIComponent(userState.username);
+      navigator.clipboard.writeText(link).then(() => {
+        showToast("রেফারেল লিংক ক্লিপবোর্ডে কপি হয়েছে।");
+      });
+    }
+
+    // ১০. পেমেন্ট ও অটো কপি
+    function openPaymentFlow(planId, amount, name) {
+      if (!authToken) {
+        showModal("লগইন আবশ্যক", "প্যাকেজ নেওয়ার পূর্বে লগইন সম্পন্ন করুন।");
+        showView("auth");
+        return;
+      }
+      activePlan = { planId, amount, name };
+      document.getElementById("lblPlanName").innerText = name;
+      document.getElementById("lblPlanAmount").innerText = amount;
+      showView("payment");
+    }
+
+    function executeAutoCopy() {
+      const field = document.getElementById("manualPayNumber");
+      field.select();
+      navigator.clipboard.writeText(field.value).then(() => {
+        showToast("পেমেন্ট নম্বর ক্লিপবোর্ডে কপি করা হয়েছে।");
+      });
+    }
+
+    async function handlePaymentSubmit() {
+      const senderNumber = document.getElementById("inputSender").value.trim();
+      const trxId = document.getElementById("inputTrxId").value.trim();
+
+      if (!senderNumber || !trxId) {
+        showModal("তথ্য ঘাটতি", "প্রেরক নম্বর এবং ট্রানজেকশন আইডি প্রদান করুন।");
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/payment/submit", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + authToken
+          },
+          body: JSON.stringify({
+            planId: activePlan.planId,
+            amount: activePlan.amount,
+            senderNumber,
+            trxId
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showModal("সফল", data.message);
+          document.getElementById("inputSender").value = "";
+          document.getElementById("inputTrxId").value = "";
+          showView("dashboard");
+        } else {
+          showModal("সতর্কতা", data.message);
+        }
+      } catch (e) {
+        showModal("ত্রুটি", "পেমেন্ট তথ্য পাঠানো যায়নি।");
+      }
+    }
+
+    // ১১. এডমিন প্যানেল লজিক
+    async function fetchAdminTransactions() {
+      try {
+        const res = await fetch("/api/admin/transactions", {
+          headers: { "Authorization": "Bearer " + authToken }
+        });
+        const data = await res.json();
+        const tbody = document.getElementById("adminTableBody");
+        tbody.innerHTML = "";
+
+        if (data.success && data.transactions) {
+          data.transactions.forEach(t => {
+            const tr = document.createElement("tr");
+            tr.style.borderBottom = "1px solid var(--gray-border)";
+            tr.innerHTML = `
+              <td style="padding:10px;">${t.id}</td>
+              <td style="padding:10px;">${t.username}</td>
+              <td style="padding:10px;">${t.plan_id}</td>
+              <td style="padding:10px;">${t.amount} ৳</td>
+              <td style="padding:10px;">${t.sender_number}</td>
+              <td style="padding:10px;"><strong>${t.trx_id}</strong></td>
+              <td style="padding:10px;">${t.status}</td>
+              <td style="padding:10px;">
+                ${t.status === 'pending' ? `
+                  <button class="btn-red" style="padding:4px 8px; font-size:0.8rem;" onclick="processAdminDecision(${t.id}, 'approve')">Approve</button>
+                  <button class="btn-outline" style="padding:4px 8px; font-size:0.8rem;" onclick="processAdminDecision(${t.id}, 'reject')">Reject</button>
+                ` : 'Completed'}
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function processAdminDecision(trxId, action) {
+      try {
+        const res = await fetch("/api/admin/action", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + authToken
+          },
+          body: JSON.stringify({ trxId, action })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message);
+          fetchAdminTransactions();
+        } else {
+          showModal("ত্রুটি", data.message);
+        }
+      } catch (e) {
+        showModal("ত্রুটি", "অ্যাকশন সম্পন্ন করা যায়নি।");
+      }
+    }
+
+    // ইনিশিয়ালাইজেশন
+    window.addEventListener("DOMContentLoaded", async () => {
+      await getDeviceFingerprint();
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const ref = urlParams.get("ref");
+      if (ref) {
+        document.getElementById("inputReferral").value = ref;
+        switchAuthMode('signup');
+        if (!authToken) showView("auth");
+      }
+
+      await syncUserState();
+    });
+  </script>
+</body>
+    </html>
