@@ -9,7 +9,7 @@ const JWT_SECRET = "CF_SECURE_HMAC_SECRET_AUTH_KEY_2026";
 
 // ২. অনুমোদিত ডোমেনের তালিকা (আপনার গিটহাব ইউজারনেম সেট করা হয়েছে)
 const ALLOWED_ORIGINS = [
-  "https://mdroni1702.github.io", // আপনার গিটহাব পেজেস ডোমেন
+  "https://roni1702.github.io", // আপনার গিটহাব পেজেস ডোমেন
   "http://localhost:2435",        // লোকালহোস্টে টেস্ট করার জন্য
   "null"                          // সরাসরি ব্রাউজারে ফাইল ওপেন করলে
 ];
