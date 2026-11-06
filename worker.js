@@ -1,12 +1,17 @@
-
+/**
+ * SynthID Remover - Cloudflare Worker Engine (Unified Repository)
+ * ডোমেন লক: https://mdroni1702.github.io
+ * কঠোর ১ ডিভাইস = ১ অ্যাকাউন্ট এবং এসকিউএল ইনজেকশন-মুক্ত আর্কিটেকচার
+ */
 
 // ১. সিকিউরিটি কনফিগারেশন
 const JWT_SECRET = "CF_SECURE_HMAC_SECRET_AUTH_KEY_2026";
 
-// ২. অনুমোদিত ডোমেনের তালিকা (আপনার গিটহাব লিংক এখানে বসাবেন)
+// ২. অনুমোদিত ডোমেনের তালিকা (আপনার গিটহাব ইউজারনেম সেট করা হয়েছে)
 const ALLOWED_ORIGINS = [
-  "https://roni1702.github.io", // আপনার GitHub Pages ডোমেন এখানে দিন
-                
+  "https://mdroni1702.github.io", // আপনার গিটহাব পেজেস ডোমেন
+  "http://localhost:2435",        // লোকালহোস্টে টেস্ট করার জন্য
+  "null"                          // সরাসরি ব্রাউজারে ফাইল ওপেন করলে
 ];
 
 // SHA-256 পাসওয়ার্ড হ্যাশার
@@ -63,7 +68,7 @@ export default {
     const url = new URL(request.url);
     const method = request.method;
 
-    // অরিজিন যাচাইকরণ (অননুমোদিত ওয়েবসাইট ব্লক)
+    // অরিজিন যাচাইকরণ (শুধুমাত্র আপনার গিটহাব পেজ রিকোয়েস্ট পাঠাতে পারবে)
     const requestOrigin = request.headers.get("Origin") || "";
     const isAllowed = ALLOWED_ORIGINS.includes(requestOrigin);
 
@@ -95,7 +100,7 @@ export default {
     };
 
     try {
-      // ১. সাইনআপ হ্যান্ডলার (১ ডিভাইস = ১ অ্যাকাউন্ট কঠোরভাবে কার্যকর)
+      // ১. সাইনআপ হ্যান্ডলার (কঠোর ১ ডিভাইস = ১ অ্যাকাউন্ট)
       if (url.pathname === "/api/auth/signup" && method === "POST") {
         const { username, password, fingerprint, referralCode } = await request.json();
         const cleanUser = (username || "").trim().toLowerCase();
@@ -110,7 +115,7 @@ export default {
           return respond({ success: false, message: "এই ইউজারনেমটি ইতিমধ্যে নেওয়া হয়েছে।" }, 400);
         }
 
-        // অ্যান্টি-ফ্রড: একই ডিভাইস থেকে দ্বিতীয় অ্যাকাউন্ট বন্ধ
+        // ডিভাইস ভেরিফিকেশন (একই ডিভাইস থেকে দ্বিতীয় একাউন্ট ব্লক)
         const fpCheck = await env.DB.prepare("SELECT id FROM device_fingerprints WHERE fingerprint = ?").bind(fingerprint).first();
         if (fpCheck) {
           return respond({ 
@@ -138,7 +143,7 @@ export default {
         // ৫ স্টার প্রাথমিক ব্যালেন্স দেওয়া
         await env.DB.prepare("INSERT INTO balances (user_id, stars, is_unlimited) VALUES (?, 5, 0)").bind(newUserId).run();
         
-        // ডিভাইস ফিঙ্গারপ্রিন্ট সংরক্ষণ
+        // ডিভাইস ফিঙ্গারপ্রিন্ট লক করা
         await env.DB.prepare("INSERT INTO device_fingerprints (fingerprint, user_id) VALUES (?, ?)").bind(fingerprint, newUserId).run();
 
         // রেফারকারীকে ৫ স্টার বোনাস দেওয়া
@@ -169,7 +174,7 @@ export default {
         return respond({ success: true, token, role: user.role, message: "লগইন সফল হয়েছে।" });
       }
 
-      // প্রোটেক্টেড সেশন চেক
+      // প্রোটেক্টেড রুট গার্ড
       const auth = await authenticate(request);
       if (!auth) {
         return respond({ success: false, message: "অননুমোদিত সেশন।" }, 401);
