@@ -1,8 +1,0 @@
-name = "synthid-c2pa-remover"
-main = "worker.js"
-compatibility_date = "2024-01-01"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "synthid_db"
-database_id = "34cf74aa-c5e2-4bf3-994d-7b7f8d22707f"
