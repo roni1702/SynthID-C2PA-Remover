@@ -96,11 +96,6 @@
       box-shadow: 0 4px 12px rgba(211, 47, 47, 0.25);
     }
 
-    .btn-red:disabled {
-      opacity: 0.65;
-      cursor: not-allowed;
-    }
-
     .btn-outline {
       background: transparent;
       color: var(--black);
@@ -117,11 +112,77 @@
     }
 
     .main-wrapper {
-      max-width: 860px;
+      max-width: 880px;
       width: 100%;
       margin: 0 auto;
-      padding: 24px 16px 60px;
+      padding: 24px 16px 40px;
       flex: 1;
+    }
+
+    /* পেন্ডিং পেমেন্ট স্ট্যাটাস বক্স */
+    .pending-banner {
+      border: 2px solid var(--black);
+      background: #fff8e1;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .pending-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .pending-badge {
+      background: #ff8f00;
+      color: var(--white);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .contact-buttons-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .btn-messenger {
+      background: #0084ff;
+      color: var(--white);
+      border: none;
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+
+    .btn-whatsapp {
+      background: var(--green);
+      color: var(--white);
+      border: none;
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
     }
 
     .notice-card {
@@ -266,11 +327,12 @@
     }
 
     .bonus-section {
-      margin-top: 26px;
-      padding: 20px;
+      margin-top: 24px;
+      padding: 18px;
       border-radius: 10px;
       background: var(--gray-bg);
       border: 1.5px solid var(--gray-border);
+      text-align: center;
     }
 
     .btn-claimed {
@@ -281,20 +343,18 @@
       background: #f0f0f0 !important;
     }
 
+    /* ৪টি নতুন প্যাকেজ গ্রিড */
     .pricing-cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 14px;
-      margin-top: 14px;
-      max-width: 720px;
-      margin-left: auto;
-      margin-right: auto;
+      margin-top: 16px;
     }
 
     .pricing-card {
       border: 1.5px solid var(--gray-border);
       border-radius: 10px;
-      padding: 16px 12px;
+      padding: 18px 12px;
       text-align: center;
       background: var(--white);
       position: relative;
@@ -304,12 +364,17 @@
       justify-content: space-between;
     }
 
+    .pricing-card.hero-tier {
+      border: 2px solid var(--red);
+      box-shadow: 0 4px 16px rgba(211, 47, 47, 0.12);
+    }
+
     .pricing-card.highlight {
       border-color: var(--green);
     }
 
     .pricing-card .price {
-      font-size: 1.45rem;
+      font-size: 1.5rem;
       font-weight: 900;
       margin: 10px 0 4px;
     }
@@ -337,8 +402,8 @@
       letter-spacing: 0.5px;
     }
 
-    .badge-green { background: var(--green); color: var(--white); }
     .badge-red { background: var(--red); color: var(--white); }
+    .badge-green { background: var(--green); color: var(--white); }
 
     .preview-box {
       border: 2px solid var(--black);
@@ -393,6 +458,29 @@
       font-weight: 700;
       cursor: pointer;
       text-decoration: underline;
+    }
+
+    /* ফুটার ডিজাইন */
+    .app-footer {
+      border-top: 2px solid var(--black);
+      padding: 24px 20px;
+      background: var(--gray-bg);
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 880px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-info {
+      font-size: 0.88rem;
+      color: var(--text-muted);
     }
 
     .modal-overlay {
@@ -461,6 +549,7 @@
 
     @media (max-width: 600px) {
       .app-header { padding: 14px 16px; }
+      .pending-header-row { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
@@ -471,7 +560,7 @@
     <div class="modal-box">
       <h3 id="modalTitle">বিজ্ঞপ্তি</h3>
       <p id="modalMsg"></p>
-      <div style="text-align: right;">
+      <div style="text-align: right;" id="modalActionContainer">
         <button class="btn-red" onclick="closeModal()">ঠিক আছে</button>
       </div>
     </div>
@@ -511,7 +600,7 @@
 
   <main class="main-wrapper">
 
-    <!-- ১. লগইন / সাইনআপ আলাদা মোড -->
+    <!-- ১. লগইন / সাইনআপ আলাদা মোড (রেফারেল ছাড়া সম্পূর্ণ ফ্রেশ) -->
     <section id="viewAuth" class="hidden" style="max-width: 400px; margin: 30px auto;">
       <h2 id="authHeading" style="font-weight: 900; margin-bottom: 20px; text-align: center;">লগইন করুন</h2>
       
@@ -525,11 +614,6 @@
         <input type="password" id="inputPassword" class="form-control" placeholder="গোপন পাসওয়ার্ড">
       </div>
       
-      <div class="form-group hidden" id="groupReferral">
-        <label>রেফারেল কোড (ঐচ্ছিক)</label>
-        <input type="text" id="inputReferral" class="form-control" placeholder="রেফারার ইউজারনেম">
-      </div>
-      
       <button id="authSubmitBtn" class="btn-red" style="width: 100%; margin-top: 10px;" onclick="processAuthSubmit()">লগইন</button>
       
       <div class="auth-toggle-link" id="authToggleContainer">
@@ -540,6 +624,32 @@
     <!-- ২. ড্যাশবোর্ড -->
     <section id="viewDashboard">
       
+      <!-- পেন্ডিং পেমেন্ট ব্যানার ও কন্টাক্ট বাটন -->
+      <div id="pendingPaymentBanner" class="pending-banner hidden">
+        <div class="pending-header-row">
+          <div>
+            <strong>পেমেন্ট রিকোয়েস্ট: </strong>
+            <span id="pendingPlanLabel">-</span>
+          </div>
+          <div class="pending-badge">পেন্ডিং</div>
+        </div>
+        <div style="font-size: 0.88rem; color: var(--black); line-height: 1.4;">
+          আপনার পেমেন্টটি বর্তমানে যাচাই করা হচ্ছে। দ্রুত অ্যাকাউন্ট অ্যাক্টিভেশনের জন্য অথবা কোনো সমস্যা হলে সরাসরি যোগাযোগ করুন:
+        </div>
+        <div class="contact-buttons-group">
+          <a href="https://m.me/mdroni1702" target="_blank" class="btn-messenger">
+            <!-- মেসেঞ্জার আইকন -->
+            <svg class="icon" style="width:16px; height:16px;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.03 2 11c0 2.87 1.47 5.43 3.76 7.02V22l3.77-2.07c.8.22 1.63.34 2.47.34 5.52 0 10-4.03 10-9s-4.48-9-10-9zm1.09 12.06l-2.54-2.71-4.96 2.71 5.46-5.8 2.6 2.71 4.9-2.71-5.46 5.8z"/></svg>
+            Messenger
+          </a>
+          <a href="https://wa.me/8801797995219" target="_blank" class="btn-whatsapp">
+            <!-- হোয়াটসঅ্যাপ আইকন -->
+            <svg class="icon" style="width:16px; height:16px;" viewBox="0 0 24 24"><path d="M16.75 13.96c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.03-1.24-.75-.67-1.26-1.5-1.41-1.75-.15-.25-.02-.38.11-.51.11-.11.25-.29.38-.44.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.45 1.03 2.61.13.17 1.77 2.71 4.3 3.79.6.26 1.07.41 1.44.53.61.19 1.16.17 1.6.1.49-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.17-.48-.29zM12 2a10 10 0 0 0-8.6 15.11L2 22l4.99-1.31A10 10 0 1 0 12 2z"/></svg>
+            WhatsApp
+          </a>
+        </div>
+      </div>
+
       <!-- নোটিশ বক্স -->
       <div class="notice-card">
         <div class="notice-item">
@@ -598,60 +708,62 @@
         </div>
       </section>
 
-      <!-- ৩টি ধাপের নিচে আলাদা বোনাস ও রেফারেল সেকশন -->
+      <!-- ডেইলি ক্লেম বাটন (রেফারেল ছাড়া সম্পূর্ণ পরিচ্ছন্ন) -->
       <div class="bonus-section">
-        <h4 style="margin-bottom: 12px; font-weight: 800;">দৈনিক বোনাস ও রেফারেল</h4>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
-          <button id="btnDailyClaim" class="btn-outline" style="border-color: var(--green); color: var(--green);" onclick="triggerDailyClaim()">
-            Claim 1 Star (Daily Bonus)
-          </button>
-          <button class="btn-outline" onclick="copyReferral()">
-            রেফারেল লিংক কপি করুন (+৫ স্টার)
-          </button>
-        </div>
+        <button id="btnDailyClaim" class="btn-outline" style="border-color: var(--green); color: var(--green); width: 100%; max-width: 320px;" onclick="triggerDailyClaim()">
+          Claim 1 Star (Daily Bonus)
+        </button>
       </div>
 
-      <!-- প্যাকেজ সেকশন -->
-      <section class="tutorial-section">
+      <!-- ৪টি নতুন প্যাকেজ সেকশন -->
+      <section class="tutorial-section" id="pricingSection">
         <h3 class="section-heading">স্টার প্যাকেজ সমূহ</h3>
         <div class="pricing-cards">
           
-          <!-- ১০ টাকা প্যাক -->
+          <!-- ২০ টাকা প্যাক -->
           <div class="pricing-card">
-            <h4>বেসিক</h4>
-            <div class="price">১০ টাকা</div>
-            <div class="stars-label">
-              <span>১০</span>
-              <!-- স্টার আইকন -->
-              <svg class="icon" style="width:16px; height:16px; color:var(--green);" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-            </div>
-            <button class="btn-red" style="width: 100%; padding: 8px 12px; font-size: 0.9rem;" onclick="openPaymentFlow('p1', 10, '১০টি স্টার')">কিনুন</button>
-          </div>
-
-          <!-- ২০ টাকা প্যাক (Most Popular) -->
-          <div class="pricing-card highlight">
-            <div class="corner-badge badge-green">Most Popular</div>
-            <h4>স্ট্যান্ডার্ড</h4>
+            <h4>স্টার্টার</h4>
             <div class="price">২০ টাকা</div>
             <div class="stars-label">
-              <span>৩০</span>
-              <!-- স্টার আইকন -->
+              <span>১৫</span>
               <svg class="icon" style="width:16px; height:16px; color:var(--green);" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
             </div>
-            <button class="btn-red" style="width: 100%; padding: 8px 12px; font-size: 0.9rem;" onclick="openPaymentFlow('p2', 20, '৩০টি স্টার')">কিনুন</button>
+            <button class="btn-red" style="width: 100%; padding: 8px 12px; font-size: 0.9rem;" onclick="openPaymentFlow('p1', 20, '১৫টি স্টার (২০৳)')">কিনুন</button>
           </div>
 
-          <!-- ৫০ টাকা প্যাক (Limited Time) -->
+          <!-- ৫০ টাকা প্যাক -->
           <div class="pricing-card">
-            <div class="corner-badge badge-red">Limited Time</div>
-            <h4>আনলিমিটেড</h4>
+            <h4>স্ট্যান্ডার্ড</h4>
             <div class="price">৫০ টাকা</div>
             <div class="stars-label">
-              <span>আনলিমিটেড</span>
-              <!-- স্টার আইকন -->
+              <span>৪৫</span>
               <svg class="icon" style="width:16px; height:16px; color:var(--green);" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
             </div>
-            <button class="btn-red" style="width: 100%; padding: 8px 12px; font-size: 0.9rem;" onclick="openPaymentFlow('p3', 50, 'আনলিমিটেড স্টার')">কিনুন</button>
+            <button class="btn-red" style="width: 100%; padding: 8px 12px; font-size: 0.9rem;" onclick="openPaymentFlow('p2', 50, '৪৫টি স্টার (৫০৳)')">কিনুন</button>
+          </div>
+
+          <!-- ৯৯ টাকা প্যাক (Most Popular Hero Offer) -->
+          <div class="pricing-card hero-tier">
+            <div class="corner-badge badge-red">Most Popular</div>
+            <h4>ক্রিয়েটর প্যাক</h4>
+            <div class="price">৯৯ টাকা</div>
+            <div class="stars-label">
+              <span>১০০</span>
+              <svg class="icon" style="width:16px; height:16px; color:var(--green);" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            </div>
+            <button class="btn-red" style="width: 100%; padding: 8px 12px; font-size: 0.9rem;" onclick="openPaymentFlow('p3', 99, '১০০টি স্টার (৯৯৳)')">কিনুন</button>
+          </div>
+
+          <!-- ১৯৯ টাকা প্যাক (VIP 30 Days Pass) -->
+          <div class="pricing-card highlight">
+            <div class="corner-badge badge-green">VIP Pass</div>
+            <h4>মাসিক আনলিমিটেড</h4>
+            <div class="price">১৯৯ টাকা</div>
+            <div class="stars-label">
+              <span>৩০ দিন আনলিমিটেড</span>
+              <svg class="icon" style="width:16px; height:16px; color:var(--green);" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            </div>
+            <button class="btn-red" style="width: 100%; padding: 8px 12px; font-size: 0.9rem;" onclick="openPaymentFlow('p4', 199, '৩০ দিন আনলিমিটেড (১৯৯৳)')">কিনুন</button>
           </div>
 
         </div>
@@ -713,41 +825,34 @@
       <button class="btn-red" style="width: 100%; margin-top: 10px;" onclick="handlePaymentSubmit()">পেমেন্ট সাবমিট করুন</button>
     </section>
 
-    <!-- ৫. এডমিন ভিউ -->
-    <section id="viewAdmin" class="hidden">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2>এডমিন প্যানেল - ট্রানজেকশন যাচাই</h2>
-        <button class="btn-outline" onclick="showView('dashboard')">হোম ড্যাশবোর্ড</button>
-      </div>
-      <div style="overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse; text-align: left;">
-          <thead>
-            <tr style="background: var(--gray-bg); border-bottom: 2px solid var(--black);">
-              <th style="padding: 10px;">আইডি</th>
-              <th style="padding: 10px;">ইউজার</th>
-              <th style="padding: 10px;">প্যাক</th>
-              <th style="padding: 10px;">টাকা</th>
-              <th style="padding: 10px;">নম্বর</th>
-              <th style="padding: 10px;">TrxID</th>
-              <th style="padding: 10px;">স্ট্যাটাস</th>
-              <th style="padding: 10px;">পদক্ষেপ</th>
-            </tr>
-          </thead>
-          <tbody id="adminTableBody"></tbody>
-        </table>
-      </div>
-    </section>
-
   </main>
+
+  <!-- ৫. ফুটার সেকশন (মেসেঞ্জার ও হোয়াটসঅ্যাপ লিংকসহ) -->
+  <footer class="app-footer">
+    <div class="footer-content">
+      <div class="footer-info">
+        <strong>SynthID Remover</strong> - Safe, In-Browser AI Watermark Stripper.<br>
+        কোনো ছবি সার্ভারে জমা হয় না।
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <a href="https://m.me/mdroni1702" target="_blank" class="btn-messenger">
+          <svg class="icon" style="width:16px; height:16px;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.03 2 11c0 2.87 1.47 5.43 3.76 7.02V22l3.77-2.07c.8.22 1.63.34 2.47.34 5.52 0 10-4.03 10-9s-4.48-9-10-9zm1.09 12.06l-2.54-2.71-4.96 2.71 5.46-5.8 2.6 2.71 4.9-2.71-5.46 5.8z"/></svg>
+          Messenger
+        </a>
+        <a href="https://wa.me/8801797995219" target="_blank" class="btn-whatsapp">
+          <svg class="icon" style="width:16px; height:16px;" viewBox="0 0 24 24"><path d="M16.75 13.96c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.03-1.24-.75-.67-1.26-1.5-1.41-1.75-.15-.25-.02-.38.11-.51.11-.11.25-.29.38-.44.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.45 1.03 2.61.13.17 1.77 2.71 4.3 3.79.6.26 1.07.41 1.44.53.61.19 1.16.17 1.6.1.49-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.17-.48-.29zM12 2a10 10 0 0 0-8.6 15.11L2 22l4.99-1.31A10 10 0 1 0 12 2z"/></svg>
+          WhatsApp
+        </a>
+      </div>
+    </div>
+  </footer>
   <script>
     /**
      * SynthID Remover - Client Engine & Native Interceptor
      */
 
-    // ক্লাউডফ্লেয়ার ওয়ার্কারের লিংক (আপনার ওয়ার্কার লিংক এখানে বসান)
-    const WORKER_URL = "https://c2paweb.mdroni5219.workers.dev";
+    const WORKER_URL = "https://c2paweb2.mdroni5219.workers.dev"; 
 
-    // সমস্ত /api/ রিকোয়েস্ট স্বয়ংক্রিয়ভাবে ওয়ার্কার লিংকে পাঠানোর ইন্টারসেপ্টর
     const nativeFetch = window.fetch;
     window.fetch = function(resource, init) {
       if (typeof resource === "string" && resource.startsWith("/api/")) {
@@ -763,10 +868,20 @@
     let cachedDeviceFingerprint = null;
     let currentAuthMode = 'login';
 
-    // ১. কাস্টম মোডাল
-    function showModal(title, message) {
+    // ১. কাস্টম মোডাল (অটো-স্ক্রোল বাটনসহ)
+    function showModal(title, message, onOkAction = null) {
       document.getElementById("modalTitle").innerText = title;
       document.getElementById("modalMsg").innerText = message;
+      const actionContainer = document.getElementById("modalActionContainer");
+      
+      actionContainer.innerHTML = `<button class="btn-red" id="modalOkBtn">ঠিক আছে</button>`;
+      document.getElementById("modalOkBtn").onclick = () => {
+        closeModal();
+        if (typeof onOkAction === 'function') {
+          onOkAction();
+        }
+      };
+
       document.getElementById("customModal").style.display = "flex";
     }
 
@@ -774,7 +889,6 @@
       document.getElementById("customModal").style.display = "none";
     }
 
-    // কাস্টম টোস্ট
     function showToast(msg) {
       const toast = document.getElementById("toastBox");
       document.getElementById("toastText").innerText = msg;
@@ -784,20 +898,16 @@
 
     // ২. ভিউ সুইচিং
     function showView(viewId) {
-      const views = ["viewAuth", "viewDashboard", "viewPreview", "viewPayment", "viewAdmin"];
+      const views = ["viewAuth", "viewDashboard", "viewPreview", "viewPayment"];
       views.forEach(v => document.getElementById(v).classList.add("hidden"));
 
       if (viewId === "dashboard") document.getElementById("viewDashboard").classList.remove("hidden");
       if (viewId === "auth") document.getElementById("viewAuth").classList.remove("hidden");
       if (viewId === "preview") document.getElementById("viewPreview").classList.remove("hidden");
       if (viewId === "payment") document.getElementById("viewPayment").classList.remove("hidden");
-      if (viewId === "admin") {
-        document.getElementById("viewAdmin").classList.remove("hidden");
-        fetchAdminTransactions();
-      }
     }
 
-    // ৩. আল্ট্রা-স্ট্যাবল ডিভাইস ফিঙ্গারপ্রিন্টিং (GPU Renderer + Screen Max/Min + Core UUID)
+    // ৩. আল্ট্রা-স্ট্যাবল ডিভাইস ফিঙ্গারপ্রিন্টিং
     async function getDeviceFingerprint() {
       if (cachedDeviceFingerprint) return cachedDeviceFingerprint;
 
@@ -822,7 +932,6 @@
       }
 
       const screenDim = Math.max(screen.width, screen.height) + "x" + Math.min(screen.width, screen.height);
-
       const immutableData = [
         coreId,
         gpuInfo,
@@ -838,12 +947,13 @@
       return cachedDeviceFingerprint;
     }
 
-    // ৪. লাইভ ব্যালেন্স সিঙ্ক
+    // ৪. লাইভ ব্যালেন্স ও পেন্ডিং ব্যানার সিঙ্ক
     async function syncUserState() {
       if (!authToken) {
         document.getElementById("liveStars").innerText = "0";
         document.getElementById("authNav").classList.remove("hidden");
         document.getElementById("userNav").classList.add("hidden");
+        document.getElementById("pendingPaymentBanner").classList.add("hidden");
         return;
       }
 
@@ -859,6 +969,7 @@
           document.getElementById("authNav").classList.add("hidden");
           document.getElementById("userNav").classList.remove("hidden");
 
+          // ডেইলি ক্লেম বাটন স্ট্যাটাস
           const today = new Date().toISOString().slice(0, 10);
           const claimBtn = document.getElementById("btnDailyClaim");
           if (data.lastDailyClaim === today) {
@@ -869,6 +980,21 @@
             claimBtn.classList.remove("btn-claimed");
             claimBtn.innerText = "Claim 1 Star (Daily Bonus)";
             claimBtn.disabled = false;
+          }
+
+          // পেন্ডিং পেমেন্ট ব্যানার প্রদর্শন
+          const banner = document.getElementById("pendingPaymentBanner");
+          if (data.pendingPayment && data.pendingPayment.status === "pending") {
+            const planNames = {
+              "p1": "১৫টি স্টার (২০৳)",
+              "p2": "৪৫টি স্টার (৫০৳)",
+              "p3": "১০০টি স্টার (৯৯৳)",
+              "p4": "৩০ দিন আনলিমিটেড (১৯৯৳)"
+            };
+            document.getElementById("pendingPlanLabel").innerText = planNames[data.pendingPayment.plan_id] || data.pendingPayment.plan_id;
+            banner.classList.remove("hidden");
+          } else {
+            banner.classList.add("hidden");
           }
 
         } else {
@@ -884,18 +1010,15 @@
       currentAuthMode = mode;
       const heading = document.getElementById("authHeading");
       const submitBtn = document.getElementById("authSubmitBtn");
-      const refGroup = document.getElementById("groupReferral");
       const toggleContainer = document.getElementById("authToggleContainer");
 
       if (mode === 'signup') {
         heading.innerText = "নতুন অ্যাকাউন্ট তৈরি করুন";
         submitBtn.innerText = "অ্যাকাউন্ট তৈরি করুন";
-        refGroup.classList.remove("hidden");
         toggleContainer.innerHTML = 'ইতিমধ্যে অ্যাকাউন্ট আছে? <span onclick="switchAuthMode(\'login\')">লগইন করুন</span>';
       } else {
         heading.innerText = "লগইন করুন";
         submitBtn.innerText = "লগইন";
-        refGroup.classList.add("hidden");
         toggleContainer.innerHTML = 'নতুন অ্যাকাউন্ট নেই? <span onclick="switchAuthMode(\'signup\')">নতুন অ্যাকাউন্ট তৈরি করুন</span>';
       }
     }
@@ -903,7 +1026,6 @@
     async function processAuthSubmit() {
       const username = document.getElementById("inputUsername").value.trim();
       const password = document.getElementById("inputPassword").value.trim();
-      const referralCode = document.getElementById("inputReferral").value.trim();
 
       if (!username || !password) {
         showModal("ভুল ইনপুট", "ইউজারনেম এবং পাসওয়ার্ড প্রদান করুন।");
@@ -917,7 +1039,7 @@
         const res = await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password, fingerprint: fp, referralCode })
+          body: JSON.stringify({ username, password, fingerprint: fp })
         });
         const data = await res.json();
 
@@ -926,11 +1048,7 @@
           localStorage.setItem("app_token", authToken);
           showToast(currentAuthMode === "signup" ? "রেজিস্ট্রেশন সফল হয়েছে।" : "লগইন সফল হয়েছে।");
           await syncUserState();
-          if (data.role === "admin") {
-            showView("admin");
-          } else {
-            showView("dashboard");
-          }
+          showView("dashboard");
         } else {
           showModal("সতর্কতা", data.message);
         }
@@ -948,7 +1066,7 @@
       showToast("লগআউট সম্পন্ন হয়েছে।");
     }
 
-    // ৬. ফাইল নির্বাচন ও মেটাডেটা/SynthID স্ক্যানার
+    // ৬. ফাইল নির্বাচন ও স্ক্যানার
     const filePicker = document.getElementById("filePicker");
     filePicker.addEventListener("change", (e) => {
       if (e.target.files && e.target.files[0]) {
@@ -975,7 +1093,6 @@
       if (watermarkDetected) {
         resultBox.className = "scanner-result warning";
         resultBox.innerHTML = `
-          <!-- ওয়ার্নিং আইকন -->
           <svg class="icon" style="color:var(--red); width:24px; height:24px;" viewBox="0 0 24 24">
             <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
           </svg>
@@ -984,7 +1101,6 @@
       } else {
         resultBox.className = "scanner-result clean";
         resultBox.innerHTML = `
-          <!-- টিক আইকন -->
           <svg class="icon" style="color:var(--green); width:24px; height:24px;" viewBox="0 0 24 24">
             <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
           </svg>
@@ -995,11 +1111,12 @@
       document.getElementById("actionBox").classList.remove("hidden");
     }
 
-    // ৭. ইমেজ প্রসেসিং ও বাটন লোডার
+    // ৭. ইমেজ প্রসেসিং ও অটো-স্ক্রোল লজিক
     async function executeImageProcessing() {
       if (!authToken) {
-        showModal("লগইন প্রয়োজন", "ছবি প্রসেস করার জন্য আগে লগইন করুন।");
-        showView("auth");
+        showModal("লগইন প্রয়োজন", "ছবি প্রসেস করার জন্য আগে লগইন করুন।", () => {
+          showView("auth");
+        });
         return;
       }
 
@@ -1020,9 +1137,15 @@
         });
         const deductData = await deductRes.json();
 
+        // ব্যালেন্স শেষ হলে ওয়ার্নিং মোডাল ও অটো-স্ক্রোল
         if (!deductData.success) {
-          showModal("ব্যালেন্স শেষ", deductData.message);
           resetButtonState();
+          showModal("ব্যালেন্স শেষ", "আপনার স্টার ব্যালেন্স শেষ হয়ে গেছে। অনুগ্রহ করে নতুন প্যাকেজ বেছে নিন।", () => {
+            const pricing = document.getElementById("pricingSection");
+            if (pricing) {
+              pricing.scrollIntoView({ behavior: "smooth" });
+            }
+          });
           return;
         }
 
@@ -1109,23 +1232,12 @@
       }
     }
 
-    // ৯. রেফারেল লিংক কপি
-    function copyReferral() {
-      if (!userState) {
-        showModal("লগইন আবশ্যক", "রেফারেল লিংক পেতে প্রথমে লগইন করুন।");
-        return;
-      }
-      const link = window.location.origin + "?ref=" + encodeURIComponent(userState.username);
-      navigator.clipboard.writeText(link).then(() => {
-        showToast("রেফারেল লিংক ক্লিপবোর্ডে কপি হয়েছে।");
-      });
-    }
-
-    // ১০. পেমেন্ট ও অটো কপি
+    // ৯. পেমেন্ট ওপেন ও সাবমিট
     function openPaymentFlow(planId, amount, name) {
       if (!authToken) {
-        showModal("লগইন আবশ্যক", "প্যাকেজ নেওয়ার পূর্বে লগইন সম্পন্ন করুন।");
-        showView("auth");
+        showModal("লগইন আবশ্যক", "প্যাকেজ নেওয়ার পূর্বে লগইন সম্পন্ন করুন।", () => {
+          showView("auth");
+        });
         return;
       }
       activePlan = { planId, amount, name };
@@ -1170,6 +1282,7 @@
           showModal("সফল", data.message);
           document.getElementById("inputSender").value = "";
           document.getElementById("inputTrxId").value = "";
+          await syncUserState();
           showView("dashboard");
         } else {
           showModal("সতর্কতা", data.message);
@@ -1179,79 +1292,11 @@
       }
     }
 
-    // ১১. এডমিন প্যানেল লজিক
-    async function fetchAdminTransactions() {
-      try {
-        const res = await fetch("/api/admin/transactions", {
-          headers: { "Authorization": "Bearer " + authToken }
-        });
-        const data = await res.json();
-        const tbody = document.getElementById("adminTableBody");
-        tbody.innerHTML = "";
-
-        if (data.success && data.transactions) {
-          data.transactions.forEach(t => {
-            const tr = document.createElement("tr");
-            tr.style.borderBottom = "1px solid var(--gray-border)";
-            tr.innerHTML = `
-              <td style="padding:10px;">${t.id}</td>
-              <td style="padding:10px;">${t.username}</td>
-              <td style="padding:10px;">${t.plan_id}</td>
-              <td style="padding:10px;">${t.amount} ৳</td>
-              <td style="padding:10px;">${t.sender_number}</td>
-              <td style="padding:10px;"><strong>${t.trx_id}</strong></td>
-              <td style="padding:10px;">${t.status}</td>
-              <td style="padding:10px;">
-                ${t.status === 'pending' ? `
-                  <button class="btn-red" style="padding:4px 8px; font-size:0.8rem;" onclick="processAdminDecision(${t.id}, 'approve')">Approve</button>
-                  <button class="btn-outline" style="padding:4px 8px; font-size:0.8rem;" onclick="processAdminDecision(${t.id}, 'reject')">Reject</button>
-                ` : 'Completed'}
-              </td>
-            `;
-            tbody.appendChild(tr);
-          });
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    async function processAdminDecision(trxId, action) {
-      try {
-        const res = await fetch("/api/admin/action", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + authToken
-          },
-          body: JSON.stringify({ trxId, action })
-        });
-        const data = await res.json();
-        if (data.success) {
-          showToast(data.message);
-          fetchAdminTransactions();
-        } else {
-          showModal("ত্রুটি", data.message);
-        }
-      } catch (e) {
-        showModal("ত্রুটি", "অ্যাকশন সম্পন্ন করা যায়নি।");
-      }
-    }
-
-    // ইনিশিয়ালাইজেশন
+    // পেজ লোড ইনিশিয়ালাইজেশন
     window.addEventListener("DOMContentLoaded", async () => {
       await getDeviceFingerprint();
-
-      const urlParams = new URLSearchParams(window.location.search);
-      const ref = urlParams.get("ref");
-      if (ref) {
-        document.getElementById("inputReferral").value = ref;
-        switchAuthMode('signup');
-        if (!authToken) showView("auth");
-      }
-
       await syncUserState();
     });
   </script>
 </body>
-    </html>
+</html>
