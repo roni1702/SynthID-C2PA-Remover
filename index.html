@@ -4,6 +4,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SynthID Remover - AI Watermark & Metadata Cleaner</title>
+  <script>
+  (function() {
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    const isFacebook = (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Instagram") > -1);
+
+    if (isFacebook) {
+      // ১. অ্যান্ড্রয়েড হলে কোনো অ্যালার্ট ছাড়া সরাসরি Google Chrome অ্যাপে পাঠিয়ে দেওয়া
+      if (/android/i.test(ua)) {
+        const currentUrl = window.location.href.replace(/^https?:\/\//, '');
+        window.location.href = "intent://" + currentUrl + "#Intent;scheme=https;package=com.android.chrome;end";
+      } 
+      // ২. আইফোন হলে পেজ লোড হলে একটি নির্দেশনামূলক অ্যালার্ট দেওয়া
+      else if (/iPhone|iPad|iPod/i.test(ua)) {
+        window.addEventListener("DOMContentLoaded", function() {
+          const banner = document.createElement("div");
+          banner.style.cssText = "position:fixed;top:0;left:0;width:100%;background:#d32f2f;color:#ffffff;padding:12px 16px;text-align:center;font-size:0.9rem;font-weight:700;z-index:99999;box-shadow:0 2px 10px rgba(0,0,0,0.3);";
+          banner.innerText = "ছবি নিরাপদে সেভ করার জন্য উপরে ডানদিকের (...) বাটনে চাপ দিয়ে 'Open in System Browser / Safari' নির্বাচন করুন।";
+          document.body.prepend(banner);
+        });
+      }
+    }
+  })();
+  </script>
   <style>
     :root {
       --red: #d32f2f;
